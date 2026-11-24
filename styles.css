@@ -40,3 +40,18 @@ input{font:inherit;color:var(--fg);background:#ffffff;border:1px solid var(--lin
 .del{background:none;border:0;color:var(--muted);cursor:pointer;font-size:14px;padding:4px 6px}
 .acts{display:flex;gap:6px;align-items:center}
 .editbox{border:1px solid var(--line);border-radius:14px;padding:14px;margin:8px 0 12px}
+.review{border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
+.card{border-radius:20px;padding:20px;min-height:210px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(135deg,#cfe6ff 0%,#e3d9ff 55%,#ffd6e8 100%);color:#111;box-shadow:0 8px 24px rgba(0,0,0,.07)}
+.card.warn{background:linear-gradient(135deg,#ffe9b8 0%,#ffd6a8 60%,#ffc3c3 100%)}
+.card.over{background:linear-gradient(135deg,#ffb8b8 0%,#ff9e9e 60%,#ffd1d1 100%)}
+.card-top{display:flex;justify-content:space-between;align-items:center}
+.card-name{font-size:12px;font-weight:600;letter-spacing:.12em}
+.badge{font-size:11px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.75);font-weight:600}
+.badge.over{background:#ffffff;color:#b53a3a}
+.card-mid{display:grid;gap:6px}
+.card-chip{width:40px;height:30px;border-radius:7px;background:linear-gradient(135deg,#f7e7a1,#e2c466)}
+.card-amount{font-size:36px;font-weight:300;letter-spacing:.01em}
+.card-sub{font-size:13px;opacity:.8}
+.card-bottom{display:flex;justify-content:space-between;font-size:13px;margin-top:14px}
+.card-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.6);overflow:hidden;margin-top:6px}
+.card-bar>i{display:block;height:100%;background:rgba(17,17,17,.55)}

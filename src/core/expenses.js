@@ -18,7 +18,8 @@ export function sanitizeList(raw, opts) {
   return raw.flatMap((e) => {
     if (!e || typeof e !== 'object' || typeof e.id !== 'string') return [];
     const r = validateExpense(e, opts);
-    return r.ok ? [{ id: e.id, ...r.value }] : [];
+    if (!r.ok) return [];
+    return [{ id: e.id, ...r.value, ...(typeof e.ref === 'string' ? { ref: e.ref } : {}) }];
   });
 }
 

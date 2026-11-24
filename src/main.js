@@ -52,9 +52,18 @@ document.addEventListener('change', async (e) => {
   render();
 });
 
-// Links like ?amount=1250&cat=bills&date=2026-11-24 pre-fill the Add form (used by the iOS Shortcut).
+// Links from the iOS Shortcut carry only: merchant, amount, date, time.
+// The SMS text never arrives here. The address is cleared after it is read.
 const params = new URLSearchParams(location.search);
-if (params.has('amount')) {
+if (params.has('merchant')) {
+  controller.dispatch('import-sms', {
+    amount: params.get('amount'),
+    merchant: params.get('merchant'),
+    date: params.get('date'),
+    time: params.get('time'),
+  });
+  history.replaceState(null, '', location.pathname);
+} else if (params.has('amount')) {
   controller.dispatch('prefill', {
     amount: params.get('amount'),
     cat: params.get('cat') || undefined,

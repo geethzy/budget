@@ -1,9 +1,10 @@
 // Offline cache for the app shell. Bump CACHE when shipping changes to the cached files.
-const CACHE = 'expense-tracker-v3';
+const CACHE = 'expense-tracker-v6';
 const SHELL = [
   './', './index.html', './styles.css', './manifest.webmanifest', './icons/icon.svg',
   './src/main.js', './src/app/controller.js',
   './src/core/dates.js', './src/core/expenses.js', './src/core/budget.js',
+  './src/core/sms.js', './src/core/rules.js',
   './src/data/config.js', './src/data/storage.js',
   './src/ui/views.js', './src/ui/format.js',
 ];

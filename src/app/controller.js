@@ -1,8 +1,10 @@
 // Owns state, runs named actions, and produces plain view models (no HTML).
-import { TABS, RULES, CATEGORIES } from '../data/config.js';
+import { TABS, RULES, CATEGORIES, VENDOR_RULES } from '../data/config.js';
 import { todayStr, parseYm, shiftMonth, monthKeyOf, calendarCells, isValidDate } from '../core/dates.js';
 import { validateExpense, addExpense, updateExpense, removeExpense, expensesOn, totalsByDate } from '../core/expenses.js';
 import { monthSummary } from '../core/budget.js';
+import { refOf, shortDate, cleanMerchant } from '../core/sms.js';
+import { resolveCategory, normalizeVendor } from '../core/rules.js';
 
 const defaultId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
@@ -10,20 +12,24 @@ export function createController({ store, categories = CATEGORIES, now = () => n
   const opts = { categoryIds: categories.map((c) => c.id), maxAmount: RULES.maxAmount };
   const today = () => todayStr(now());
   const emptyDraft = () => ({ amount: '', cat: categories[0].id, date: today() });
+  const catName = (id) => (categories.find((c) => c.id === id) || { name: id }).name;
 
+  const loaded = store.load();
   const state = {
     tab: 'add',
-    expenses: store.load().expenses,
+    expenses: loaded.expenses,       // confirmed expenses (counted in budgets)
+    pending: loaded.pending,         // SMS entries waiting for a category (not counted yet)
+    merchantMap: loaded.merchantMap, // merchant -> category, learned from your choices
     draft: emptyDraft(),
-    edit: null,            // copy of the expense being edited
+    edit: null,
     selectedDate: today(),
-    picker: null,          // 'add' | 'edit' | null: which date grid is open
-    grids: {},             // visible month per grid: add, cal, edit
+    picker: null,                    // 'add' | 'edit' | null
+    grids: {},
     message: '',
   };
 
   const gridOf = (key) => state.grids[key] || parseYm(today());
-  const persist = () => store.save({ expenses: state.expenses });
+  const persist = () => store.save({ expenses: state.expenses, pending: state.pending, merchantMap: state.merchantMap });
 
   const actions = {
     tab({ value }) {
@@ -37,7 +43,7 @@ export function createController({ store, categories = CATEGORIES, now = () => n
     'draft-amount'({ value }) { state.draft.amount = value; return false; },
     'draft-cat'({ cat }) { state.draft.cat = cat; },
 
-    // Pre-fills the Add form from a link (for example, an iOS Shortcut). It never saves by itself.
+    // Pre-fills the Add form from a link. It never saves by itself.
     prefill({ amount, cat, date }) {
       const digits = String(amount ?? '').replace(/[^\d.]/g, '');
       if (digits) state.draft.amount = digits;
@@ -108,16 +114,74 @@ export function createController({ store, categories = CATEGORIES, now = () => n
       persist();
     },
 
+    // Adds a pending entry from the Shortcut's fields. The SMS text itself never reaches the app.
+    'import-sms'({ amount, merchant, date, time }) {
+      state.tab = 'add';
+      state.picker = null;
+      const amt = Math.round(Number(String(amount ?? '').replace(/[^\d.]/g, '')));
+      if (!Number.isFinite(amt) || amt <= 0 || amt > RULES.maxAmount) {
+        state.message = "Couldn't read the amount from that SMS. Enter it manually.";
+        return;
+      }
+      const vendor = cleanMerchant(merchant);
+      const isoDate = shortDate(date);
+      const ref = refOf([amt, normalizeVendor(vendor), isoDate || '', String(time ?? '').trim()].join('|'));
+      if (state.expenses.some((e) => e.ref === ref) || state.pending.some((p) => p.ref === ref)) {
+        state.message = 'This SMS is already in the list.';
+        return;
+      }
+      state.pending.push({
+        id: newId(),
+        ref,
+        amount: amt,
+        vendor,
+        date: isoDate,
+        suggested: resolveCategory(vendor, state.merchantMap, VENDOR_RULES, 'other'),
+      });
+      persist();
+      state.message = `Added Rs ${amt.toLocaleString('en-US')} to review.`;
+    },
+
+    // You pick a category for a pending SMS. It is saved, and the merchant remembers the choice.
+    'review-pick'({ id, cat }) {
+      const p = state.pending.find((x) => x.id === id);
+      if (!p) return;
+      const r = validateExpense({ amount: p.amount, cat, date: p.date || today() }, opts);
+      if (!r.ok) { state.message = r.error; return; }
+      state.expenses = addExpense(state.expenses, { id: newId(), ...r.value, ref: p.ref });
+      state.pending = state.pending.filter((x) => x.id !== id);
+      const key = normalizeVendor(p.vendor);
+      if (key) {
+        state.merchantMap[key] = cat;
+        for (const other of state.pending) {
+          if (normalizeVendor(other.vendor) === key) other.suggested = cat;
+        }
+      }
+      persist();
+      state.message = key
+        ? `Saved as ${catName(cat)}. ${p.vendor} will suggest ${catName(cat)} next time.`
+        : `Saved as ${catName(cat)}.`;
+    },
+
+    'dismiss-pending'({ id }) {
+      state.pending = state.pending.filter((x) => x.id !== id);
+      persist();
+      state.message = 'Removed from review.';
+    },
+
     'import'({ text }) {
+      let data;
       try {
-        state.expenses = store.parseBackup(text);
+        data = store.parseBackup(text);
       } catch (err) {
         state.message = err.message;
         return;
       }
-      persist();
+      state.expenses = data.expenses;
+      state.merchantMap = data.merchantMap;
       state.edit = null;
-      state.message = `Imported ${state.expenses.length} expenses.`;
+      persist();
+      state.message = `Imported ${data.expenses.length} expenses.`;
     },
   };
 
@@ -130,7 +194,7 @@ export function createController({ store, categories = CATEGORIES, now = () => n
     },
 
     exportText() {
-      return store.serialize({ expenses: state.expenses });
+      return store.serialize({ expenses: state.expenses, merchantMap: state.merchantMap });
     },
 
     view() {
@@ -149,6 +213,7 @@ export function createController({ store, categories = CATEGORIES, now = () => n
         today: todayDate,
         message: state.message,
         categories,
+        pending: state.pending,
         add: {
           draft: state.draft,
           picker: state.picker === 'add',
