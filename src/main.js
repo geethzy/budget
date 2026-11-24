@@ -52,15 +52,13 @@ document.addEventListener('change', async (e) => {
   render();
 });
 
-// Links from the iOS Shortcut carry only: merchant, amount, date, time.
+// Links from the iOS Shortcut carry only the merchant and the amount.
 // The SMS text never arrives here. The address is cleared after it is read.
 const params = new URLSearchParams(location.search);
 if (params.has('merchant')) {
   controller.dispatch('import-sms', {
     amount: params.get('amount'),
     merchant: params.get('merchant'),
-    date: params.get('date'),
-    time: params.get('time'),
   });
   history.replaceState(null, '', location.pathname);
 } else if (params.has('amount')) {

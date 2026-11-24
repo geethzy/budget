@@ -1,5 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#ffffff"/>
-  <circle cx="256" cy="256" r="150" fill="#c9f2d6"/>
-  <text x="256" y="300" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="150" font-weight="600" text-anchor="middle" fill="#111111">Rs</text>
+  <rect width="512" height="512" fill="#ffe4ef"/>
+  <path d="M86 268 q-34 -6 -28 -34 q6 -22 26 -10" fill="none" stroke="#f49cc2" stroke-width="12" stroke-linecap="round"/>
+  <rect x="136" y="360" width="46" height="84" rx="22" fill="#f49cc2"/>
+  <rect x="200" y="360" width="46" height="84" rx="22" fill="#f49cc2"/>
+  <rect x="290" y="360" width="46" height="84" rx="22" fill="#f49cc2"/>
+  <rect x="354" y="360" width="46" height="84" rx="22" fill="#f49cc2"/>
+  <ellipse cx="250" cy="290" rx="150" ry="118" fill="#ffb3d1"/>
+  <path d="M212 190 L252 112 L282 196 Z" fill="#ffb3d1"/>
+  <path d="M226 188 L252 136 L268 194 Z" fill="#f49cc2"/>
+  <ellipse cx="388" cy="288" rx="44" ry="36" fill="#f49cc2"/>
+  <circle cx="378" cy="284" r="6" fill="#b8608f"/>
+  <circle cx="400" cy="284" r="6" fill="#b8608f"/>
+  <circle cx="302" cy="252" r="13" fill="#111111"/>
+  <circle cx="302" cy="252" r="4" fill="#ffffff"/>
+  <circle cx="392" cy="112" r="34" fill="#f7e7a1" stroke="#e2c466" stroke-width="7"/>
+  <text x="392" y="124" font-family="Arial,Helvetica,sans-serif" font-size="34" font-weight="700" text-anchor="middle" fill="#b8962e">Rs</text>
 </svg>

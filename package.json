@@ -1,9 +1,9 @@
 {
-  "name": "expense-tracker",
+  "name": "piggyplan",
   "version": "2.0.0",
   "private": true,
   "type": "module",
-  "description": "Minimalist LKR expense and monthly budget tracker (PWA)",
+  "description": "PiggyPlan: a minimalist LKR expense and budget tracker (PWA)",
   "scripts": {
     "start": "python3 -m http.server 8000",
     "test": "node --test tests/test.js"

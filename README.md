@@ -1,4 +1,4 @@
-# Expense Tracker
+# PiggyPlan
 
 A minimalist expense and monthly budget tracker in LKR. It is a Progressive Web App built with plain HTML, CSS and JavaScript modules, with no framework and no build step. Data is stored on the device only.
 

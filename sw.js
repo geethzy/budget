@@ -1,7 +1,7 @@
 // Offline cache for the app shell. Bump CACHE when shipping changes to the cached files.
-const CACHE = 'expense-tracker-v6';
+const CACHE = 'piggyplan-v7';
 const SHELL = [
-  './', './index.html', './styles.css', './manifest.webmanifest', './icons/icon.svg',
+  './', './index.html', './styles.css', './manifest.webmanifest', './icons/icon.svg', './icons/apple-touch-icon.png',
   './src/main.js', './src/app/controller.js',
   './src/core/dates.js', './src/core/expenses.js', './src/core/budget.js',
   './src/core/sms.js', './src/core/rules.js',

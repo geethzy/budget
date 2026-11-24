@@ -3,7 +3,7 @@ import { TABS, RULES, CATEGORIES, VENDOR_RULES } from '../data/config.js';
 import { todayStr, parseYm, shiftMonth, monthKeyOf, calendarCells, isValidDate } from '../core/dates.js';
 import { validateExpense, addExpense, updateExpense, removeExpense, expensesOn, totalsByDate } from '../core/expenses.js';
 import { monthSummary } from '../core/budget.js';
-import { refOf, shortDate, cleanMerchant } from '../core/sms.js';
+import { refOf, cleanMerchant } from '../core/sms.js';
 import { resolveCategory, normalizeVendor } from '../core/rules.js';
 
 const defaultId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -115,7 +115,7 @@ export function createController({ store, categories = CATEGORIES, now = () => n
     },
 
     // Adds a pending entry from the Shortcut's fields. The SMS text itself never reaches the app.
-    'import-sms'({ amount, merchant, date, time }) {
+    'import-sms'({ amount, merchant }) {
       state.tab = 'add';
       state.picker = null;
       const amt = Math.round(Number(String(amount ?? '').replace(/[^\d.]/g, '')));
@@ -124,8 +124,8 @@ export function createController({ store, categories = CATEGORIES, now = () => n
         return;
       }
       const vendor = cleanMerchant(merchant);
-      const isoDate = shortDate(date);
-      const ref = refOf([amt, normalizeVendor(vendor), isoDate || '', String(time ?? '').trim()].join('|'));
+      const isoDate = today();
+      const ref = refOf([amt, normalizeVendor(vendor), isoDate].join('|'));
       if (state.expenses.some((e) => e.ref === ref) || state.pending.some((p) => p.ref === ref)) {
         state.message = 'This SMS is already in the list.';
         return;

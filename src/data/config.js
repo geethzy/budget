@@ -16,15 +16,12 @@ export const TABS = ['add', 'calendar', 'overview'];
 // Merchant name -> category. Matched by substring, ignoring case. First match wins.
 // Edit this list to match your merchants. Anything unmatched goes to 'other'.
 export const VENDOR_RULES = [
-  { match: 'keells',    cat: 'grocery' },
-  { match: 'cargills',  cat: 'grocery' },
-  { match: 'arpico',    cat: 'grocery' },
-  { match: 'mobitel',   cat: 'bills' },
-  { match: 'dialog',    cat: 'bills' },
-  { match: 'ceb',       cat: 'bills' },
-  { match: 'ceypetco',  cat: 'transport' },
-  { match: 'pickme',    cat: 'transport' },
-  { match: 'uber',      cat: 'transport' },
+  { match: 'keells',       cat: 'grocery' },
+  { match: 'spar',          cat: 'grocery' },
+  { match: 'uber',          cat: 'transport' },
+  { match: 'mobitel',       cat: 'bills' },
+  { match: 'dialog',        cat: 'bills' },
+  { match: 'perera & sons', cat: 'outings' },
 ];
 
 export const RULES = {

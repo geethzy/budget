@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { isValidDate, shiftMonth, calendarCells } from '../src/core/dates.js';
 import { validateExpense, sanitizeList } from '../src/core/expenses.js';
 import { monthSummary } from '../src/core/budget.js';
-import { refOf, shortDate, cleanMerchant } from '../src/core/sms.js';
+import { refOf, cleanMerchant } from '../src/core/sms.js';
 import { resolveCategory } from '../src/core/rules.js';
 import { createStore } from '../src/data/storage.js';
 import { createController } from '../src/app/controller.js';
@@ -19,7 +19,7 @@ const fixedNow = () => new Date(2026, 10, 24, 21, 0); // 24 Nov 2026, 9 PM
 const seqIds = () => { let n = 0; return () => `id${++n}`; };
 const makeController = (storage = memory()) =>
   createController({ store: createStore({ storage }), now: fixedNow, newId: seqIds() });
-const PARTS = { amount: '100.00', merchant: 'MOBITEL (PVT) LTD COLOMBO LK', date: '17/11/26', time: '06:11 PM' };
+const PARTS = { amount: '100.00', merchant: 'MOBITEL (PVT) LTD COLOMBO LK' };
 
 test('dates: validation and month arithmetic', () => {
   assert.equal(isValidDate('2026-11-24'), true);
@@ -59,9 +59,6 @@ test('budget: warning state at 80%; Other has no budget', () => {
 });
 
 test('sms helpers: dates, merchant cleaning and fingerprints', () => {
-  assert.equal(shortDate('17/11/26'), '2026-11-17');
-  assert.equal(shortDate('31/02/26'), null);
-  assert.equal(shortDate('yesterday'), null);
   assert.equal(cleanMerchant('  ACME\u0007   STORE  '), 'ACME STORE');
   assert.equal(cleanMerchant('x'.repeat(200)).length, 60);
   assert.equal(refOf('a|b'), refOf('a|b'));
@@ -138,19 +135,19 @@ test('SMS: goes to review and is not counted until a category is picked', () => 
 
 test('SMS: an unknown merchant is learned from the category you pick', () => {
   const c = makeController();
-  c.dispatch('import-sms', { amount: '800.00', merchant: 'ACME STORE', date: '02/11/26', time: '10:00 AM' });
+  c.dispatch('import-sms', { amount: '800.00', merchant: 'ACME STORE' });
   assert.equal(c.view().pending[0].suggested, 'other');
   c.dispatch('review-pick', { id: c.view().pending[0].id, cat: 'grocery' });
-  c.dispatch('import-sms', { amount: '300.00', merchant: 'acme   store', date: '03/11/26', time: '11:00 AM' });
+  c.dispatch('import-sms', { amount: '300.00', merchant: 'acme   store' });
   assert.equal(c.view().pending[0].suggested, 'grocery');
 });
 
-test('SMS: the same payment is not added twice, but two payments at different times are', () => {
+test('SMS: the same payment is not added twice, but a different amount is', () => {
   const c = makeController();
   c.dispatch('import-sms', PARTS);
   c.dispatch('import-sms', PARTS);
   assert.equal(c.view().pending.length, 1);
-  c.dispatch('import-sms', { ...PARTS, time: '07:30 PM' });
+  c.dispatch('import-sms', { ...PARTS, amount: '250.00' });
   assert.equal(c.view().pending.length, 2);
 });
 
@@ -176,4 +173,13 @@ test('SMS: pending entries survive a reload and contain only the fields sent', (
   const saved = storage.getItem('expense-tracker-v2');
   assert.ok(!saved.includes('authorised'));
   assert.ok(!saved.includes('Dear Cardholder'));
+});
+
+test('rules: merchants match whole words only; your list is applied', () => {
+  assert.equal(resolveCategory('SPAR', {}, VENDOR_RULES, 'other'), 'grocery');
+  assert.equal(resolveCategory('Sparkle Cafe', {}, VENDOR_RULES, 'other'), 'other');
+  assert.equal(resolveCategory('PERERA & SONS', {}, VENDOR_RULES, 'other'), 'outings');
+  assert.equal(resolveCategory('UBER', {}, VENDOR_RULES, 'other'), 'transport');
+  assert.equal(resolveCategory('DIALOG AXIATA', {}, VENDOR_RULES, 'other'), 'bills');
+  assert.equal(resolveCategory('CARGILLS', {}, VENDOR_RULES, 'other'), 'other');
 });
